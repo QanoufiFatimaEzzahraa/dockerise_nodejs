@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  nodejs:
+    build: .
+    container_name: nodejs-container
+    ports:
+      - "5050:3000"  # Utilisation du port 5050 sur l'hôte pour accéder à Node.js
+    volumes:
+      - ./app:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm start
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user
+    ports:
+      - "5051:3306"  # Utilisation du port 5051 sur l'hôte pour accéder à MySQL
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin-container
+    environment:
+      PMA_HOST: mysql-container
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8083:80"  # Utilisation du port 8083 sur l'hôte pour accéder à phpMyAdmin
+    depends_on:
+      - mysql
+
+  vscode:
+    image: codercom/code-server:latest
+    container_name: vscode-container
+    environment:
+      - PASSWORD=fati # Définit un mot de passe pour accéder à VSCode
+    ports:
+      - "8080:8080"  # Accès à VSCode via le port 8080
+    volumes:
+      - ./app:/home/coder/project  # Montage du répertoire de ton projet
+    command: code-server --auth password  # Active l'authentification avec mot de passe
+
+volumes:
+  mysql-data:
